@@ -1,0 +1,34 @@
+name: PR Description Check
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+
+jobs:
+  check-description:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check PR description
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body || "";
+
+            const requiredSections = [
+              "## 📌 Description",
+              "## 🔗 Related Issue",
+              "## 🧪 How was this tested?"
+            ];
+
+            const missing = requiredSections.filter(section => !body.includes(section));
+
+            if (missing.length > 0) {
+              core.setFailed(
+                `PR description is missing required sections:\n${missing.join("\n")}`
+              );
+            }
+
+            if (body.trim().length < 30) {
+              core.setFailed("PR description is too short. Please provide meaningful details.");
+            }
