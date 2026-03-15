@@ -1,0 +1,12 @@
+# Build folders (The big ones)
+bin/
+obj/
+
+# Environment secrets (Important for security!)
+.env
+appsettings.Development.json
+
+# Tooling
+.DS_Store
+dist/
+node_modules/
