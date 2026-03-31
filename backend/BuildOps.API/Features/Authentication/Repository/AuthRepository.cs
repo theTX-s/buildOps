@@ -25,6 +25,11 @@ public class AuthRepository(AppDbContext dbContext) : IAuthRepository
         return user;
     }
 
+    public async Task<RefreshToken?> GetRefreshTokenWithUserByHash(string hashedToken)
+    {
+        return await dbContext.RefreshTokens.Include(r => r.User.Profile).FirstOrDefaultAsync(r => r.Token == hashedToken);
+    }
+
     public async Task<bool> UserExists(string emailId, string phoneNumber)
     {
         return await dbContext.Users.AnyAsync(u => u.EmailId == emailId || u.PhoneNumber == phoneNumber);

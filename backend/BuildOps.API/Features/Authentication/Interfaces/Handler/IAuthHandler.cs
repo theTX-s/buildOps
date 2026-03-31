@@ -7,5 +7,7 @@ public interface IAuthHandler
 {
     Task<LogInResponse?> LogInAsync(LogInRequest logInRequest);
 
+    Task<LogInResponse?> RefreshToken(string refreshToken);
+
     Task<LogInResponse?> SignUpAsync(SignUpRequest signUpRequest);
 }

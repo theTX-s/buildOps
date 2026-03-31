@@ -6,6 +6,8 @@ using BuildOps.API.Features.Authentication.Service;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace BuildOps.API.Features.Authentication.Handler;
 
@@ -38,6 +40,32 @@ public class AuthHandler(IAuthRepository repository, ITokenService tokenService,
             try
             {
                 var tokens = await GenerateAccessAndRefreshTokenAsync(user);
+                await transaction.CommitAsync();
+                return tokens;
+            }
+            catch (Exception)
+            {
+                await transaction.RollbackAsync();
+                throw;
+            }
+        });
+    }
+
+    public async Task<LogInResponse?> RefreshToken(string refreshToken)
+    {
+        var hashedToken = HashToken(refreshToken);
+        var refreshTokenWithUser = await repository.GetRefreshTokenWithUserByHash(hashedToken);
+        if (refreshTokenWithUser == null || refreshTokenWithUser.User == null)
+        {
+            return null;
+        }
+        var strategy = repository.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
+        {
+            using var transaction = await repository.BeginTransationAsync();
+            try
+            {
+                var tokens = await GenerateAccessAndRefreshTokenAsync(refreshTokenWithUser.User);
                 await transaction.CommitAsync();
                 return tokens;
             }
@@ -105,7 +133,7 @@ public class AuthHandler(IAuthRepository repository, ITokenService tokenService,
         var refreshTokenEntity = new RefreshToken
         {
             Id = Guid.NewGuid(),
-            Token = refreshToken,
+            Token = HashToken(refreshToken),
             ExpiresAt = DateTime.UtcNow.AddDays(_config.RefreshTokenExpirationDays),
             UserId = user.Id
         };
@@ -118,5 +146,11 @@ public class AuthHandler(IAuthRepository repository, ITokenService tokenService,
             AccessToken = accessToken,
             RefreshToken = refreshToken
         };
+    }
+
+    private static string HashToken(string token)
+    {
+        byte[] bytes = SHA512.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToBase64String(bytes);
     }
 }

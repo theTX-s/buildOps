@@ -13,6 +13,8 @@ public interface IAuthRepository
 
     Task<User> SaveUser(User user);
 
+    Task<RefreshToken?> GetRefreshTokenWithUserByHash(string hashedToken);
+
     Task SaveUserProfile(UserProfile userProfile);
 
     Task SaveRefreshToken(RefreshToken refreshToken);

@@ -27,6 +27,18 @@ public class AuthController(IAuthHandler handler) : ControllerBase
         return Ok(logInResponse);
     }
 
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+    {
+        var logInResponse = await handler.RefreshToken(refreshToken);
+        if (logInResponse == null)
+        {
+            return Unauthorized(new { message = "Invalid Token" });
+        }
+        return Ok(logInResponse);
+    }
+
     [HttpPost("signUp")]
     [AllowAnonymous]
     public async Task<IActionResult> SignUp(SignUpRequest signUpRequest)
