@@ -22,7 +22,7 @@ const interceptor = {
     if (response.status === 401) {
       const headers = new Headers({});
       headers.set("Content-Type", "application/json");
-      response = await fetch("/api/auth/refresh", {
+      response = await fetch(BASE_URL + "/api/auth/refresh", {
         method: "POST",
         headers,
         credentials: "include",

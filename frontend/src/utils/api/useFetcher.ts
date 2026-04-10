@@ -6,8 +6,8 @@ import type { FetchError, UseFetcherResponse } from "./interface";
 const useFetcher = <T>(
   method: "GET" | "POST",
   url: string,
-  params: unknown,
-  options: RequestInit,
+  params?: unknown,
+  options?: RequestInit,
 ): UseFetcherResponse<T> => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<FetchError | null>(null);
