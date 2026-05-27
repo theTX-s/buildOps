@@ -12,13 +12,22 @@ const interceptor = {
     if (GlobalCache.GetCache(ACCESS_TOKEN)) {
       headers.set(
         "Authorization",
-        `Bearer ${GlobalCache.GetCache(ACCESS_TOKEN)}`,
+        `Bearer ${GlobalCache.GetCache(ACCESS_TOKEN)?.data ?? ""}`,
       );
     }
-    return { ...config, headers };
+        
+    return { ...config, headers, credentials: "include" };
   },
 
-  response: async (response: Response) => {
+  response: async (response: Response, endpoint:string) => {
+    if (endpoint === "/api/auth/login") {
+      if(response.status === 200){
+        const resp = response.clone();
+        const data = await resp.text() ?? "";
+        GlobalCache.SetCache(ACCESS_TOKEN,data)
+        console.log(GlobalCache.GetCache(ACCESS_TOKEN),data,endpoint,resp);
+      }
+    }
     if (response.status === 401) {
       const headers = new Headers({});
       headers.set("Content-Type", "application/json");
@@ -27,7 +36,7 @@ const interceptor = {
         headers,
         credentials: "include",
       });
-      const data = await response.json().catch(() => {});
+      const data = await response.text() ?? "";
       if (response.ok) {
         GlobalCache.SetCache(ACCESS_TOKEN, data);
       } else {
@@ -43,11 +52,12 @@ function CreateFetcher() {
     const config = interceptor.request(options);
     const url = BASE_URL + endpoint;
     try {
-      const response = await fetch(url, config);
+      let response = await fetch(url, config);
 
-      await interceptor.response(response);
+      response = await interceptor.response(response, endpoint);
 
-      const data = await response.json().catch(() => {});
+      const clonedResponse = response.clone();
+      const data = await clonedResponse.json().catch(() => {});
 
       if (!response.ok) {
         console.warn("error occured", response.status);
