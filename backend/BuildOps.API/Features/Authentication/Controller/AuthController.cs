@@ -66,8 +66,8 @@ public class AuthController(IAuthHandler handler) : ControllerBase
         var cookieOptions = new CookieOptions
         {
             HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
             Expires = DateTime.UtcNow.AddDays(7),
             Path = "/api/auth/refresh"
         };
