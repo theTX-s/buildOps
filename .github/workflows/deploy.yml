@@ -2,7 +2,7 @@ name: Build and Deploy Application
 
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
