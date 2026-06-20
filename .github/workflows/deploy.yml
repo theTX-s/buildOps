@@ -16,7 +16,11 @@ jobs:
     runs-on: [self-hosted, buildOps-dev]
     timeout-minutes: 15
 
+    environment:
+      name: dev
+
     steps:
+
     - name: Checkout Code
       uses: actions/checkout@v4
 
@@ -27,30 +31,30 @@ jobs:
 
     - name: Publish .NET Backend
       run: |
-        dotnet restore backend/
-        dotnet publish backend/ -c Release -o ./backend-dist
+        dotnet restore backend/BuildOps.API/
+        dotnet publish backend/BuildOps.API/ -c Release -o ./backend-dist
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '24'
+        node-version: '22'
 
     - name: Build React Frontend
+      working-directory: frontend
       run: |
-        cd frontend
-        npm ci 
+        npm ci
         npm run build
 
-    - name: Deploy Assets Safely
+    - name: Deploy
       run: |
-        rsync -rlptD --delete ./backend-dist/ /var/www/builOps/backend/
+        rsync -rlptD --delete ./backend-dist/ /var/www/buildOps/backend/BuildOps.API/
         rsync -rlptD --delete ./frontend/dist/ /var/www/buildOps/frontend/
 
-    - name: Restart Systemd API Service
+    - name: Restart API
       run: |
         sudo systemctl restart webapi.service
 
-    - name: Verify Service Status
+    - name: Verify
       run: |
-        sleep 3
-        systemctl is-active webapi.service
+        sleep 5
+        systemctl is-active --quiet webapi.service
