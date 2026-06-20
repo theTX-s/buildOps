@@ -14,7 +14,7 @@ permissions:
 jobs:
   build-and-deploy:
     runs-on: [self-hosted, buildOps-dev]
-    timeout-minutes: 15
+    timeout-minutes: 120
 
     environment:
       name: dev
@@ -28,11 +28,11 @@ jobs:
       run: |
         dotnet --version
         dotnet --list-sdks
-
+    
     - name: Publish .NET Backend
       run: |
-        dotnet restore backend/BuildOps.API/
-        dotnet publish backend/BuildOps.API/ -c Release -o ./backend-dist
+        dotnet restore backend/BuildOps.API/BuildOps.API.csproj
+        dotnet publish backend/BuildOps.API/BuildOps.API.csproj -c Release -o ./backend-dist
 
     - name: Setup Node.js
       uses: actions/setup-node@v4
