@@ -15,6 +15,9 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var jwtSettings = builder.Configuration
+    .GetSection(JWTConfiguration.SectionName)
+    .Get<JWTConfiguration>();
 
 builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString, npgsqlOptions =>
 {
@@ -54,11 +57,25 @@ builder.Services.AddAuthentication(options =>
         ValidateLifetime = true,
         ValidateIssuerSigningKey = true,
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidIssuer = jwtSettings!.Issuer,
+        ValidAudience = jwtSettings.Audience,
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
+            Encoding.UTF8.GetBytes(jwtSettings.Secret!)),
+
+        ClockSkew = TimeSpan.Zero
     };
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        policy =>
+        {
+            policy.WithOrigins("http://localhost:5173")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                  .AllowCredentials();
+        });
 });
 
 var app = builder.Build();
@@ -70,6 +87,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("AllowSpecificOrigins");
 
 app.UseAuthentication();
 app.UseAuthorization();

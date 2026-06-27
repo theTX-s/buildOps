@@ -24,30 +24,54 @@ public class AuthController(IAuthHandler handler) : ControllerBase
         {
             return Unauthorized(new { message = "Invalid emailId or password" });
         }
-        return Ok(logInResponse);
+        SetRefreshTokenCookie(logInResponse.RefreshToken);
+        return Ok(logInResponse.AccessToken);
     }
 
     [HttpPost("refresh")]
     [AllowAnonymous]
-    public async Task<IActionResult> RefreshToken([FromBody] string refreshToken)
+    public async Task<IActionResult> RefreshToken()
     {
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (string.IsNullOrEmpty(refreshToken))
+        {
+            return Unauthorized(new { message = Request.Cookies });
+        }
+
         var logInResponse = await handler.RefreshToken(refreshToken);
         if (logInResponse == null)
         {
             return Unauthorized(new { message = "Invalid Token" });
         }
-        return Ok(logInResponse);
+        SetRefreshTokenCookie(logInResponse.RefreshToken);
+        return Ok(logInResponse.AccessToken);
     }
 
     [HttpPost("signUp")]
     [AllowAnonymous]
     public async Task<IActionResult> SignUp(SignUpRequest signUpRequest)
     {
-        var logInReponse = await handler.SignUpAsync(signUpRequest);
-        if (logInReponse == null)
+        var logInResponse = await handler.SignUpAsync(signUpRequest);
+        if (logInResponse == null)
         {
             return Conflict(new { message = "Phone number or emailId already exists" });
         }
-        return Ok(logInReponse);
+        SetRefreshTokenCookie(logInResponse.RefreshToken);
+        return Ok(logInResponse.AccessToken);
+    }
+
+    private void SetRefreshTokenCookie(string refreshToken)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = false,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTime.UtcNow.AddDays(7),
+            Path = "/api/auth/refresh"
+        };
+
+        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 }
