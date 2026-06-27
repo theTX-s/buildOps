@@ -1,0 +1,60 @@
+name: Build and Deploy Application
+
+on:
+  push:
+    branches: [ dev ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: [self-hosted, buildOps-dev]
+    timeout-minutes: 120
+
+    environment:
+      name: dev
+
+    steps:
+
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Check .NET Version
+      run: |
+        dotnet --version
+        dotnet --list-sdks
+    
+    - name: Publish .NET Backend
+      run: |
+        dotnet restore backend/BuildOps.API/BuildOps.API.csproj
+        dotnet publish backend/BuildOps.API/BuildOps.API.csproj -c Release -o ./backend-dist
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - name: Build React Frontend
+      working-directory: frontend
+      run: |
+        npm ci
+        npm run build
+
+    - name: Deploy
+      run: |
+        rsync -rlptD --delete ./backend-dist/ /var/www/buildOps/backend/BuildOps.API/
+        rsync -rlptD --delete ./frontend/dist/ /var/www/buildOps/frontend/
+
+    - name: Restart API
+      run: |
+        sudo systemctl restart webapi.service
+
+    - name: Verify
+      run: |
+        sleep 5
+        systemctl is-active --quiet webapi.service
