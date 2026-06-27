@@ -1,42 +1,35 @@
-import { useMemo, useState } from "react";
-import useFetcher from "../../utils/api/useFetcher";
+import { useState } from "react";
+import { auth, Fetcher } from "../../utils/api/fetcher";
 
 export const useSignInHandler = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [rememberMe, setRememberMe] = useState(false);
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    rememberMe: false,
+  });
 
-  const options = useMemo(() => ({}), []);
-  const loginParams = useMemo(() => ({ emailId: email, password }),[email,password]);
-//   const loginParams = useMemo(
-//     () => ({ emailId: "test@test.test", password: "test" }),
-//     [],
-//   );
-  const {
-    isLoading: loginLoading,
-    data: loginResponse,
-    error: loginError,
-  } = useFetcher("POST", "/api/auth/login", loginParams, options);
-//   const [call, setCall] = useState(1);
-//   const options1 = useMemo(() => ({}), [call]);
-//   const { isLoading, data, error } = useFetcher(
-//     "GET",
-//     "/api/auth/test",
-//     null,
-//     options1,
-//   );
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, type, checked } = e.target;
 
-//   console.log(isLoading, data, error);
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleLogIn = async () => {
+    const data = (await Fetcher.Post("/api/auth/login", {
+      emailId: form.email,
+      password: form.password,
+    })) as {
+      accessToken: string;
+    };
+    auth.setAccessToken(data.accessToken ?? data);
+  };
 
   return {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    rememberMe,
-    setRememberMe,
-    loginLoading,
-    loginError,
-    loginResponse,
+    form,
+    handleChange,
+    handleLogIn,
   };
 };

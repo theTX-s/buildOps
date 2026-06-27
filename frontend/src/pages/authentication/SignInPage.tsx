@@ -1,34 +1,13 @@
 import React from "react";
-import styles from "./signInPage.module.css";
 import { useSignInHandler } from "./signInHandler";
+import styles from "./signInPage.module.css";
 
 export default function SignInPage() {
-    const {
-      email,
-      setEmail,
-      password,
-      setPassword,
-      rememberMe,
-      setRememberMe,
-    } = useSignInHandler();
-
-  // const options = useMemo(()=>({}),[]);
-  // const loginParams = useMemo(()=>({emailId:"test@test.test",password:"test"}),[]);
-  // const {isLoading:loginLoading,data:loginResponse,error:loginError} = useFetcher("POST","/api/auth/login",loginParams,options);
-
-  // const [call,setCall] = useState(1);
-  // const options1 = useMemo(() => ({}),[call]);
-
-  // const { isLoading, data, error } = useFetcher(
-  //   "GET",
-  //   "/api/auth/test",
-  //   null,
-  //   options1,
-  // );
+  const { form, handleChange, handleLogIn } = useSignInHandler();
 
   const handleSubmit = (e: React.SubmitEvent) => {
     e.preventDefault();
-    console.log({ email, password, rememberMe });
+    handleLogIn();
   };
 
   return (
@@ -83,9 +62,10 @@ export default function SignInPage() {
               <input
                 id="email"
                 type="email"
+                name="email"
                 required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={form.email}
+                onChange={handleChange}
                 placeholder="Enter your email"
               />
             </div>
@@ -95,9 +75,10 @@ export default function SignInPage() {
               <input
                 id="password"
                 type="password"
+                name="password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                value={form.password}
+                onChange={handleChange}
                 placeholder="••••••••"
               />
             </div>
@@ -106,10 +87,11 @@ export default function SignInPage() {
               <label className={styles.rememberLabel}>
                 <input
                   type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  name="checkbox"
+                  checked={form.rememberMe}
+                  onChange={handleChange}
                 />
-                {rememberMe && <span className={styles.customCheckmark} />}
+                {form.rememberMe && <span className={styles.customCheckmark} />}
                 Remember for 30 days
               </label>
               <a href="#" className={styles.forgotLink}>
