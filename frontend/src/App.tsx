@@ -1,11 +1,10 @@
 import "./App.css";
+import SignInPage from "./pages/authentication/SignInPage";
+import TestComponent from "./pages/authentication/Test/TestComponent";
 
 function App() {
-  return (
-    <>
-      <h1>Hello World</h1>
-    </>
-  );
+  const path = window.location.pathname;
+  return <>{path === "/testPage" ? <TestComponent /> : <SignInPage />}</>;
 }
 
 export default App;

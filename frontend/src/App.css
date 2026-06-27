@@ -1,42 +1,49 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0rem;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+:root {
+  --bg-page: #f8f9fc;
+  --bg-card: #ffffff;
+  --text-primary: #394240;
+  --text-fade: rgba(57, 66, 64, 0.7);
+  --border-color: rgba(57, 66, 64, 0.15);
+  --shadow-card: 0 4px 6px -1px rgba(57, 66, 64, 0.03), 0 10px 15px -3px rgba(57, 66, 64, 0.06);
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-color: #121414;
+    --text-color: #f8f9fc;
+    --card-bg: #1e2221;
+    --bg-page: #121414;
+    --bg-card: #1e2221;
+    --text-primary: #f8f9fc;
+    --text-fade: rgba(248, 249, 252, 0.7);
+    --border-color: rgba(248, 249, 252, 0.15);
+    --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
   }
 }
+/* 
+:root {
+  --bg-color: #f8f9fc;
+  --text-color: #394240;
+  --card-bg: #ffffff;
+  --yellow: #f9ebb2;
+  --yellow-hover: #f7e394;
+  --dark-yellow: #f8dc6f;
+  --dark-yellow-hover: #fedd5a;
+  --bg: #f8f9fc;
+  --charcoal: #394240;
+  --charcoal-fade: rgba(57, 66, 64, 0.7);
+  --border: rgba(57, 66, 64, 0.15);
+} */
 
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
