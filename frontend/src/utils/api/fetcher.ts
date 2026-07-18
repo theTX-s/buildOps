@@ -1,57 +1,17 @@
+import { getRefreshToken } from "../../pages/authentication/AuthApis";
+import config from "../../pages/authentication/authConfig";
 import { FetchError } from "./errors";
 import { Store } from "./store";
-
-const ENV =
-  (import.meta as unknown as { env?: Record<string, string> }).env ?? {};
-
-const config = {
-  baseUrl: ENV.VITE_API_BASE_URL ?? "",
-  refreshEndpoint: "/api/auth/refresh",
-  logInEndpoint: "/api/auth/login",
-  onAuthFailure: (): void => {
-    Store.token.clear();
-    if (typeof window !== "undefined") {
-      // window.location.assign("/login");
-      console.warn("[fetcher] session expired — redirect to login");
-    }
-  },
-};
 
 export function configureFetcher(patch: Partial<typeof config>): void {
   Object.assign(config, patch);
 }
 
-async function extractToken(res: Response): Promise<string | null> {
-  const text = await res.text();
-  if (!text) return null;
-  try {
-    const json = JSON.parse(text) as Record<string, unknown>;
-    const candidate =
-      json.accessToken ?? json.access_token ?? json.token ?? json.jwt;
-    return typeof candidate === "string" ? candidate : null;
-  } catch {
-    return text.trim();
-  }
-}
-
 let refreshPromise: Promise<boolean> | null = null;
-
-async function runRefresh(): Promise<boolean> {
-  const res = await fetch(config.baseUrl + config.refreshEndpoint, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-  });
-  if (!res.ok) return false;
-  const newToken = await extractToken(res);
-  if (!newToken) return false;
-  Store.token.set(newToken);
-  return true;
-}
 
 function refreshAccessToken(): Promise<boolean> {
   if (!refreshPromise) {
-    refreshPromise = runRefresh()
+    refreshPromise = getRefreshToken()
       .catch(() => false)
       .finally(() => {
         refreshPromise = null;
@@ -128,8 +88,6 @@ async function baseRequest(
     endpoint !== config.refreshEndpoint &&
     endpoint !== config.logInEndpoint
   ) {
-    console.log(endpoint);
-
     const refreshed = await refreshAccessToken();
     if (refreshed) {
       return baseRequest(endpoint, options, false);

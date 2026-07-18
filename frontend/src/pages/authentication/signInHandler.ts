@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { auth, Fetcher } from "../../utils/api/fetcher";
+import useAuth from "./AuthProvider";
 
 export const useSignInHandler = () => {
+  const { logIn } = useAuth();
   const [form, setForm] = useState({
     email: "",
     password: "",
@@ -18,13 +19,13 @@ export const useSignInHandler = () => {
   };
 
   const handleLogIn = async () => {
-    const data = (await Fetcher.Post("/api/auth/login", {
+    const isSuccess = await logIn({
       emailId: form.email,
       password: form.password,
-    })) as {
-      accessToken: string;
-    };
-    auth.setAccessToken(data.accessToken ?? data);
+    });
+    if (isSuccess){
+      // redirect user to dashboard
+    }
   };
 
   return {
@@ -32,4 +33,4 @@ export const useSignInHandler = () => {
     handleChange,
     handleLogIn,
   };
-};
+};;

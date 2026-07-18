@@ -1,8 +1,11 @@
 import { useState } from "react";
-import { auth, useFetcher } from "../../../utils/api";
+import { useFetcher } from "../../../utils/api";
+import useAuth from "../AuthProvider";
 
 export default function TestComponent() {
   const [wasButtonPressed, setWasButtonPressed] = useState(false);
+
+  const { logOut } = useAuth();
 
   const {
     isSuccess: testResponse,
@@ -22,8 +25,8 @@ export default function TestComponent() {
   };
 
   const handleLogout = () => {
-    auth.logout();
-    window.location.href = "/login";
+    logOut();
+    // redirect the user to log in screen
   };
 
   return (
