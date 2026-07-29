@@ -20,6 +20,10 @@
     0 10px 15px -3px rgba(57, 66, 64, 0.06);
 }
 
+#root {
+  height: 100%;
+}
+
 @media (prefers-color-scheme: dark) {
   :root {
     --bg-page: #121414;
